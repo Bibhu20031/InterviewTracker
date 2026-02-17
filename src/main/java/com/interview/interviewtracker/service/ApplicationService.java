@@ -4,12 +4,13 @@ import com.interview.interviewtracker.domain.entity.Application;
 import com.interview.interviewtracker.domain.enums.ApplicationStatus;
 import com.interview.interviewtracker.dto.ApplicationResponse;
 import com.interview.interviewtracker.dto.CreateApplicationRequest;
+import com.interview.interviewtracker.dto.PagedResponse;
 import com.interview.interviewtracker.dto.UpdateApplicationRequest;
 import com.interview.interviewtracker.repository.ApplicationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ApplicationService {
@@ -28,13 +29,6 @@ public class ApplicationService {
 
         Application saved = applicationRepository.save(application);
         return mapToResponse(saved);
-    }
-
-    public List<ApplicationResponse> getAll() {
-        return applicationRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
     }
 
     public ApplicationResponse getById(Long id) {
@@ -86,6 +80,29 @@ public class ApplicationService {
                 application.getNotes(),
                 application.getCreatedAt(),
                 application.getUpdatedAt()
+        );
+    }
+
+    public PagedResponse<ApplicationResponse> getPaginated(
+            ApplicationStatus status,
+            Pageable pageable) {
+
+        Page<Application> page;
+
+        if (status != null) {
+            page = applicationRepository.findByStatus(status, pageable);
+        } else {
+            page = applicationRepository.findAll(pageable);
+        }
+
+        Page<ApplicationResponse> mapped = page.map(this::mapToResponse);
+
+        return new PagedResponse<>(
+                mapped.getContent(),
+                mapped.getNumber(),
+                mapped.getSize(),
+                mapped.getTotalElements(),
+                mapped.getTotalPages()
         );
     }
 }

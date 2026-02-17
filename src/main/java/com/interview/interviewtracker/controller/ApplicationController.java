@@ -3,11 +3,15 @@ package com.interview.interviewtracker.controller;
 import com.interview.interviewtracker.domain.enums.ApplicationStatus;
 import com.interview.interviewtracker.dto.ApplicationResponse;
 import com.interview.interviewtracker.dto.CreateApplicationRequest;
+import com.interview.interviewtracker.dto.PagedResponse;
 import com.interview.interviewtracker.dto.UpdateApplicationRequest;
 import com.interview.interviewtracker.service.ApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 import java.util.List;
 
@@ -29,9 +33,15 @@ public class ApplicationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ApplicationResponse>> getAll() {
-        return ResponseEntity.ok(applicationService.getAll());
+    public ResponseEntity<PagedResponse<ApplicationResponse>> getAll(
+            @RequestParam(required = false) ApplicationStatus status,
+            Pageable pageable) {
+
+        return ResponseEntity.ok(
+                applicationService.getPaginated(status, pageable)
+        );
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ApplicationResponse> getById(@PathVariable Long id) {
